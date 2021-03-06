@@ -31,7 +31,9 @@ class ProductItem extends StatelessWidget {
           ),
           trailing: IconButton(
             icon: Icon(Icons.shopping_cart),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).pushNamed(ProductDetailScreen.routeName);
+            },
             color: Theme.of(context).accentColor,
           ),
           title: Text(
