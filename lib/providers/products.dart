@@ -49,10 +49,12 @@ class Products with ChangeNotifier {
 
   void showFavoritesOnly(){
     this._showFavoritesOnly = true;
+    notifyListeners();
   }
 
   void showAll(){
     this._showFavoritesOnly = false;
+    notifyListeners();
   }
 
   Product findById(String id){
