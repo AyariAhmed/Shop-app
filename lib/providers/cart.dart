@@ -1,32 +1,29 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:shop_app/models/cart_item.dart';
 import 'package:uuid/uuid.dart';
 
-class CartItem {
-  final String id;
-  final String title;
-  final int quantity;
-  final double price;
-
-  CartItem(
-      {@required this.id,
-      @required this.title,
-      @required this.quantity,
-      @required this.price});
-}
 
 class Cart with ChangeNotifier {
-  Map<String, CartItem> _items;
+  Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items {
     return {..._items};
+  }
+
+  bool prodInCart(productId){
+    return _items.containsKey(productId);
+  }
+
+  int get itemCount{
+    return _items.length;
   }
 
   void addItem(
       {@required String productId,
       @required double price,
       @required String title}) {
-    if (_items.containsKey(productId)) {
+    if (prodInCart(productId)) {
       _items.update(
           productId,
           (existingCartItem) => CartItem(
@@ -40,5 +37,6 @@ class Cart with ChangeNotifier {
           () => CartItem(
               id: Uuid().v4(), title: title, quantity: 1, price: price));
     }
+    notifyListeners();
   }
 }
