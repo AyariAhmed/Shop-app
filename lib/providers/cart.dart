@@ -47,4 +47,10 @@ class Cart with ChangeNotifier {
     }
     notifyListeners();
   }
+
+  void removeItem(String prodId){
+    _items.remove(prodId);
+    notifyListeners();
+  }
+
 }
