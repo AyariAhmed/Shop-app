@@ -31,7 +31,7 @@ class UserProductsScreen extends StatelessWidget {
             return Column(
               children: [
                 UserProductItem(
-                    title: product.title, imageUrl: product.imageUrl),
+                    title: product.title, imageUrl: product.imageUrl,id: product.id,),
                 Divider(thickness: 0.9,)
               ],
             );
