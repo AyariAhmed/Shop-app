@@ -105,10 +105,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
       Provider.of<Products>(context, listen: false)
           .addProduct(_editedProduct)
           .catchError((error) {
-        showDialog(
+        return showDialog(
             context: context,
             builder: (ctx) {
-              return AlertDialog(
+                return AlertDialog(
                 title: Text('An Error Occurred!'),
                 content: Text('Something Went Wrong.'),
                 actions: [
@@ -157,7 +157,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             price: _editedProduct.price,
                             description: _editedProduct.description,
                             id: _editedProduct.id,
-                            isFavotite: _editedProduct.isFavotite,
+                            isFavorite: _editedProduct.isFavorite,
                             imageUrl: _editedProduct.imageUrl);
                       },
                       validator: (value) {
@@ -183,7 +183,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             price: double.parse(value),
                             description: _editedProduct.description,
                             id: _editedProduct.id,
-                            isFavotite: _editedProduct.isFavotite,
+                            isFavorite: _editedProduct.isFavorite,
                             imageUrl: _editedProduct.imageUrl);
                       },
                       validator: (value) {
@@ -211,7 +211,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             price: _editedProduct.price,
                             description: value,
                             id: _editedProduct.id,
-                            isFavotite: _editedProduct.isFavotite,
+                            isFavorite: _editedProduct.isFavorite,
                             imageUrl: _editedProduct.imageUrl);
                       },
                       validator: (value) {
@@ -263,7 +263,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                   price: _editedProduct.price,
                                   description: _editedProduct.description,
                                   id: _editedProduct.id,
-                                  isFavotite: _editedProduct.isFavotite,
+                                  isFavorite: _editedProduct.isFavorite,
                                   imageUrl: value);
                             },
                             validator: (value) {

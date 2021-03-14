@@ -5,6 +5,7 @@ import 'package:shop_app/widgets/app_drawer.dart';
 import 'package:shop_app/widgets/badge.dart';
 import 'package:shop_app/widgets/products_grid.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/providers/products.dart';
 
 enum FilterOptions { Favorites, All }
 
@@ -15,6 +16,23 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   var _showOnlyFavorites = false;
+  var _isLoading = false;
+
+  @override
+  void initState() {
+    setState(() {
+      _isLoading = true;
+    });
+    // In order for provider.of to work , listen must be set to false or use the didChangeDependencies
+    Provider.of<Products>(context, listen: false)
+        .fetchAndSetProducts()
+        .then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,12 +65,11 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
                     ),
                   ]),
           Consumer<Cart>(
-            builder: (ctx,Cart cart, childIconButton) => Badge(
-                child: childIconButton,
-                value: cart.itemCount.toString()),
+            builder: (ctx, Cart cart, childIconButton) =>
+                Badge(child: childIconButton, value: cart.itemCount.toString()),
             child: IconButton(
               icon: Icon(Icons.shopping_cart),
-              onPressed: (){
+              onPressed: () {
                 Navigator.of(context).pushNamed(CartScreen.routeName);
               },
             ),
@@ -60,7 +77,11 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductGrid(_showOnlyFavorites),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductGrid(_showOnlyFavorites),
     );
   }
 }
