@@ -4,7 +4,7 @@ import 'package:shop_app/providers/cart.dart' show Cart;
 import 'package:shop_app/providers/orders.dart';
 import 'package:shop_app/screens/orders_screen.dart';
 import 'package:shop_app/widgets/cart_item.dart' as ci;
-import 'package:provider/provider.dart';
+
 
 class CartScreen extends StatelessWidget {
   static const routeName = '/route';
@@ -39,16 +39,7 @@ class CartScreen extends StatelessWidget {
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
                   // ignore: deprecated_member_use
-                  FlatButton(
-                    onPressed: () {
-                      Provider.of<Orders>(context,listen: false).addOrder(
-                          cart.items.values.toList(), cart.totalPriceAmount);
-                      cart.clear();
-                      Navigator.of(context).pushNamed(OrdersScreen.routeName);
-                    },
-                    child: Text('ORDER NOW'),
-                    textColor: Theme.of(context).primaryColor,
-                  )
+                  OrderButton(cart: cart)
                 ],
               ),
             ),
@@ -71,6 +62,45 @@ class CartScreen extends StatelessWidget {
           ))
         ],
       ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+  }) : super(key: key);
+
+  final Cart cart;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    // ignore: deprecated_member_use
+    return FlatButton(
+      onPressed: (widget.cart.totalPriceAmount <= 0 || _isLoading) ? null : () async{
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        setState(() {
+          _isLoading = true;
+        });
+       await Provider.of<Orders>(context,listen: false).addOrder(
+            widget.cart.items.values.toList(), widget.cart.totalPriceAmount);
+        widget.cart.clear();
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.of(context).pushNamed(OrdersScreen.routeName);
+      },
+      child: Text('ORDER NOW'),
+      textColor: Theme.of(context).primaryColor,
     );
   }
 }
