@@ -9,6 +9,10 @@ import 'edit_product_screen.dart';
 class UserProductsScreen extends StatelessWidget {
   static const routeName = 'user-products';
 
+  Future<void> _refreshProducts(BuildContext ctx) async {
+    await Provider.of<Products>(ctx,listen: false).fetchAndSetProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
@@ -17,28 +21,37 @@ class UserProductsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Manage your products'),
         actions: [
-          IconButton(icon: Icon(Icons.add), onPressed: () {
-            Navigator.of(context).pushNamed(EditProductScreen.routeName);
-          }),
+          IconButton(
+              icon: Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context).pushNamed(EditProductScreen.routeName);
+              }),
         ],
       ),
       drawer: AppDrawer(),
-      body: Padding(
-        padding: const EdgeInsets.all(8),
-        child: ListView.builder(
-          itemBuilder: (_, index) {
-            final product = productsData.items[index];
-            return Column(
-              children: [
-                UserProductItem(
-                    title: product.title, imageUrl: product.imageUrl,id: product.id,
+      body: RefreshIndicator(
+        onRefresh: () => _refreshProducts(context),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: ListView.builder(
+            itemBuilder: (_, index) {
+              final product = productsData.items[index];
+              return Column(
+                children: [
+                  UserProductItem(
+                    title: product.title,
+                    imageUrl: product.imageUrl,
+                    id: product.id,
                     deleteHandler: productsData.deleteProduct,
-                ),
-                Divider(thickness: 0.9,)
-              ],
-            );
-          },
-          itemCount: productsData.items.length,
+                  ),
+                  Divider(
+                    thickness: 0.9,
+                  )
+                ],
+              );
+            },
+            itemCount: productsData.items.length,
+          ),
         ),
       ),
     );

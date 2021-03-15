@@ -81,7 +81,12 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : ProductGrid(_showOnlyFavorites),
+          : RefreshIndicator(
+          onRefresh: () async{
+            await Provider.of<Products>(context, listen: false)
+                .fetchAndSetProducts();
+          },
+          child: ProductGrid(_showOnlyFavorites)),
     );
   }
 }
