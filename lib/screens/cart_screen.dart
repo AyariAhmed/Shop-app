@@ -99,7 +99,7 @@ class _OrderButtonState extends State<OrderButton> {
         });
         Navigator.of(context).pushNamed(OrdersScreen.routeName);
       },
-      child: Text('ORDER NOW'),
+      child: _isLoading ? Center(child: CircularProgressIndicator(),) : Text('ORDER NOW'),
       textColor: Theme.of(context).primaryColor,
     );
   }
