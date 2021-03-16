@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app/models/http_exception.dart';
 import 'package:shop_app/providers/auth.dart';
 
 enum AuthMode { Signup, Login }
@@ -99,6 +100,19 @@ class _AuthCardState extends State<AuthCard> {
 
   AuthMode _authMode = AuthMode.Login;
 
+  void _showErrorDialog(String msg){
+    showDialog(context: context, builder: (ctx){
+      return AlertDialog(title: Text('An Error Occurred!'),
+        content: Text(msg),
+        actions: [
+          TextButton(onPressed: (){
+            Navigator.of(ctx).pop();
+          }, child: Text('Okay'))
+        ],
+      );
+    });
+  }
+
   Map<String, String> _authData = {
     'email': '',
     'password': '',
@@ -115,12 +129,31 @@ class _AuthCardState extends State<AuthCard> {
     setState(() {
       _isLoading = true;
     });
+    try{
     if (_authMode == AuthMode.Login) {
       // Log user in
       await Provider.of<Auth>(context,listen: false).signin(_authData['email'], _authData['password']);
     } else {
       // Sign user up
      await Provider.of<Auth>(context,listen: false).signup(_authData['email'], _authData['password']);
+    }
+    }on HttpException catch(error){
+      var errorMessage = 'Authentication failed';
+      if (error.toString().contains('EMAIL_EXISTS')) {
+        errorMessage = 'This email address is already in use.';
+      } else if (error.toString().contains('INVALID_EMAIL')) {
+        errorMessage = 'This is not a valid email address';
+      } else if (error.toString().contains('WEAK_PASSWORD')) {
+        errorMessage = 'This password is too weak.';
+      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+        errorMessage = 'Could not find a user with that email.';
+      } else if (error.toString().contains('INVALID_PASSWORD')) {
+        errorMessage = 'Wrong Credentials!';
+      }
+      _showErrorDialog(errorMessage);
+    }catch(error){
+      const errorMessage = 'Could not Authenticate! Please try again later.';
+      _showErrorDialog(errorMessage);
     }
     setState(() {
       _isLoading = false;
