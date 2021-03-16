@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/models/http_exception.dart';
 import 'package:shop_app/providers/auth.dart';
+import 'package:shop_app/screens/products_overview_screen.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -137,6 +138,7 @@ class _AuthCardState extends State<AuthCard> {
       // Sign user up
      await Provider.of<Auth>(context,listen: false).signup(_authData['email'], _authData['password']);
     }
+
     }on HttpException catch(error){
       var errorMessage = 'Authentication failed';
       if (error.toString().contains('EMAIL_EXISTS')) {
@@ -152,6 +154,7 @@ class _AuthCardState extends State<AuthCard> {
       }
       _showErrorDialog(errorMessage);
     }catch(error){
+      print(error);
       const errorMessage = 'Could not Authenticate! Please try again later.';
       _showErrorDialog(errorMessage);
     }

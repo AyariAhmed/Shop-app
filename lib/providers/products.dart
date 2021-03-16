@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
-
+  Map<String,String> _token;
   List<Product> get items {
     return [..._items];
   }
@@ -19,10 +19,16 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
+  void update(String authToken){
+    if(authToken != null){
+      _token = {"auth":authToken};
+    }
+  }
+
   Future<void> fetchAndSetProducts() async {
-    final url = Uri.https(
+     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products.json");
+        "/products.json",_token);
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -48,7 +54,7 @@ class Products with ChangeNotifier {
   Future<void> addProduct(Product product) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products.json");
+        "/products.json",_token);
     final response = await http.post(url,
         body: json.encode({
           "title": product.title,
@@ -75,7 +81,7 @@ class Products with ChangeNotifier {
     if (prodIndex > -1) {
       final url = Uri.https(
           "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-          "/products/$id.json");
+          "/products/$id.json",_token);
       await http.patch(url,
           body: json.encode({
             "title": product.title,
@@ -92,7 +98,7 @@ class Products with ChangeNotifier {
   Future<void> deleteProduct(String id) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products/$id.json");
+        "/products/$id.json",_token);
 
     final existingProductIndex =
         _items.indexWhere((element) => element.id == id);

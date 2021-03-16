@@ -2,21 +2,27 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shop_app/models/cart_item.dart';
 import 'package:shop_app/models/order_item.dart';
-import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
+  Map<String,String> _token;
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
+  void update(String authToken){
+    if(authToken != null){
+      _token = {"auth" :authToken};
+    }
+  }
+
   Future<void> fetchAndSetOrders() async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/orders.json");
+        "/orders.json",_token);
     final response = await http.get(url);
     final List<OrderItem> loadedOrders = [];
     final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -44,7 +50,7 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/orders.json");
+        "/orders.json",_token);
     try {
       final timeStamp = DateTime.now();
       final response = await http.post(url,
