@@ -1,6 +1,7 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/auth.dart';
 
 enum AuthMode { Signup, Login }
 
@@ -39,15 +40,14 @@ class AuthScreen extends StatelessWidget {
                 children: <Widget>[
                   Flexible(
                     child: Container(
-                      margin: EdgeInsets.only(bottom: 20.0),
+                      margin: EdgeInsets.only(bottom: 38.0),
                       padding:
                           EdgeInsets.symmetric(vertical: 8.0, horizontal: 94.0),
-                      transform: Matrix4.rotationZ(-8 * pi / 180)
-                        ..translate(-10.0),
-                      // ..translate(-10.0),
+                      transform: Matrix4.rotationZ(-8 * pi / 190)
+                        ..translate(-6.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
-                        color: Colors.deepOrange.shade900,
+                        color: Colors.deepOrange.shade700,
                         boxShadow: [
                           BoxShadow(
                             blurRadius: 8,
@@ -59,8 +59,8 @@ class AuthScreen extends StatelessWidget {
                       child: Text(
                         'MyShop',
                         style: TextStyle(
-                          color: Theme.of(context).accentTextTheme.title.color,
-                          fontSize: 50,
+                          color: Colors.white,
+                          fontSize: 45,
                           fontFamily: 'Anton',
                           fontWeight: FontWeight.normal,
                         ),
@@ -91,8 +91,14 @@ class AuthCard extends StatefulWidget {
 }
 
 class _AuthCardState extends State<AuthCard> {
+
   final GlobalKey<FormState> _formKey = GlobalKey();
+  final _passwordFocusNode = FocusNode();
+  final _confirmPasswordFocusNode = FocusNode();
+  final _submitFocusNode = FocusNode();
+
   AuthMode _authMode = AuthMode.Login;
+
   Map<String, String> _authData = {
     'email': '',
     'password': '',
@@ -100,7 +106,7 @@ class _AuthCardState extends State<AuthCard> {
   var _isLoading = false;
   final _passwordController = TextEditingController();
 
-  void _submit() {
+  Future<void> _submit() async{
     if (!_formKey.currentState.validate()) {
       // Invalid!
       return;
@@ -111,8 +117,10 @@ class _AuthCardState extends State<AuthCard> {
     });
     if (_authMode == AuthMode.Login) {
       // Log user in
+      await Provider.of<Auth>(context,listen: false).signin(_authData['email'], _authData['password']);
     } else {
       // Sign user up
+     await Provider.of<Auth>(context,listen: false).signup(_authData['email'], _authData['password']);
     }
     setState(() {
       _isLoading = false;
@@ -134,17 +142,18 @@ class _AuthCardState extends State<AuthCard> {
   @override
   Widget build(BuildContext context) {
     final deviceSize = MediaQuery.of(context).size;
+
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 8.0,
       child: Container(
-        height: _authMode == AuthMode.Signup ? 320 : 260,
+        height: _authMode == AuthMode.Signup ? 560 : 260,
         constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 320 : 260),
-        width: deviceSize.width * 0.75,
-        padding: EdgeInsets.all(16.0),
+            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 560 : 260),
+        width: deviceSize.width * 0.78,
+        padding: EdgeInsets.symmetric(horizontal: 16,vertical: 5),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -153,8 +162,13 @@ class _AuthCardState extends State<AuthCard> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'E-Mail'),
                   keyboardType: TextInputType.emailAddress,
+                  onFieldSubmitted: (_){
+                    FocusScope.of(context).requestFocus(_passwordFocusNode);
+                  },
                   validator: (value) {
-                    if (value.isEmpty || !value.contains('@')) {
+                    if (value.isEmpty ||
+                        !value.contains('@') ||
+                        !value.contains('.')) {
                       return 'Invalid email!';
                     }
                     return null;
@@ -166,6 +180,10 @@ class _AuthCardState extends State<AuthCard> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Password'),
                   obscureText: true,
+                  focusNode: _passwordFocusNode,
+                  onFieldSubmitted: (_){
+                    FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
+                  },
                   controller: _passwordController,
                   validator: (value) {
                     if (value.isEmpty || value.length < 5) {
@@ -181,6 +199,10 @@ class _AuthCardState extends State<AuthCard> {
                   TextFormField(
                     enabled: _authMode == AuthMode.Signup,
                     decoration: InputDecoration(labelText: 'Confirm Password'),
+                    focusNode: _confirmPasswordFocusNode,
+                    onFieldSubmitted: (_){
+                      FocusScope.of(context).requestFocus(_submitFocusNode);
+                    },
                     obscureText: true,
                     validator: _authMode == AuthMode.Signup
                         ? (value) {
@@ -202,6 +224,7 @@ class _AuthCardState extends State<AuthCard> {
                     child:
                         Text(_authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP'),
                     onPressed: _submit,
+                    focusNode: _submitFocusNode,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
