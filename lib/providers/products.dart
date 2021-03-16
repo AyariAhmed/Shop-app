@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 class Products with ChangeNotifier {
   List<Product> _items = [];
   Map<String,String> _token;
+  String _userId;
   List<Product> get items {
     return [..._items];
   }
@@ -19,9 +20,12 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  void update(String authToken){
+  void update(String authToken,String userId){
     if(authToken != null){
       _token = {"auth":authToken};
+    }
+    if(userId != null){
+      _userId = userId;
     }
   }
 
@@ -29,11 +33,17 @@ class Products with ChangeNotifier {
      final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
         "/products.json",_token);
+     final urlFavorites = Uri.https(
+         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
+         "/userFavorites/$_userId.json",_token);
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
-      final List<Product> loadedProducts = [];
+
       if(extractedData == null) return;
+      final favoriteResponse = await http.get(urlFavorites);
+      final favoriteData = json.decode(favoriteResponse.body);
+      final List<Product> loadedProducts = [];
       extractedData.forEach((prodId, prodData) {
         final addedProd = Product(
             id: prodId,
@@ -41,7 +51,7 @@ class Products with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: prodData['isFavorite']);
+            isFavorite: favoriteData == null ? false : favoriteData[prodId] ?? false);
         loadedProducts.add(addedProd);
         notifyListeners();
       });
@@ -61,7 +71,6 @@ class Products with ChangeNotifier {
           "description": product.description,
           "price": product.price,
           "imageUrl": product.imageUrl,
-          "isFavorite": product.isFavorite
         }));
 
     final id = json.decode(response.body)['name'];
