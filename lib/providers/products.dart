@@ -6,8 +6,9 @@ import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
   List<Product> _items = [];
-  Map<String,String> _token;
+  Map<String, String> _token;
   String _userId;
+
   List<Product> get items {
     return [..._items];
   }
@@ -20,27 +21,34 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  void update(String authToken,String userId){
-    if(authToken != null){
-      _token = {"auth":authToken};
+  void update(String authToken, String userId) {
+    if (authToken != null) {
+      _token = {"auth": authToken};
     }
-    if(userId != null){
+    if (userId != null) {
       _userId = userId;
     }
   }
 
-  Future<void> fetchAndSetProducts() async {
-     final url = Uri.https(
+  Future<void> fetchAndSetProducts([bool filterByUser = false]) async {
+    final queryParams = filterByUser
+        ? {..._token, "orderBy": "\"creatorId\"", "equalTo": "\"${_userId}\""}
+        : _token;
+
+    final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products.json",_token);
-     final urlFavorites = Uri.https(
-         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-         "/userFavorites/$_userId.json",_token);
+        "/products.json",
+        queryParams);
+
+    final urlFavorites = Uri.https(
+        "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
+        "/userFavorites/$_userId.json",
+        _token);
     try {
       final response = await http.get(url);
       final extractedData = json.decode(response.body) as Map<String, dynamic>;
 
-      if(extractedData == null) return;
+      if (extractedData == null) return;
       final favoriteResponse = await http.get(urlFavorites);
       final favoriteData = json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
@@ -51,7 +59,8 @@ class Products with ChangeNotifier {
             description: prodData['description'],
             price: prodData['price'],
             imageUrl: prodData['imageUrl'],
-            isFavorite: favoriteData == null ? false : favoriteData[prodId] ?? false);
+            isFavorite:
+                favoriteData == null ? false : favoriteData[prodId] ?? false);
         loadedProducts.add(addedProd);
         notifyListeners();
       });
@@ -64,13 +73,15 @@ class Products with ChangeNotifier {
   Future<void> addProduct(Product product) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products.json",_token);
+        "/products.json",
+        _token);
     final response = await http.post(url,
         body: json.encode({
           "title": product.title,
           "description": product.description,
           "price": product.price,
           "imageUrl": product.imageUrl,
+          "creatorId": _userId
         }));
 
     final id = json.decode(response.body)['name'];
@@ -90,7 +101,8 @@ class Products with ChangeNotifier {
     if (prodIndex > -1) {
       final url = Uri.https(
           "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-          "/products/$id.json",_token);
+          "/products/$id.json",
+          _token);
       await http.patch(url,
           body: json.encode({
             "title": product.title,
@@ -107,7 +119,8 @@ class Products with ChangeNotifier {
   Future<void> deleteProduct(String id) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/products/$id.json",_token);
+        "/products/$id.json",
+        _token);
 
     final existingProductIndex =
         _items.indexWhere((element) => element.id == id);
@@ -116,7 +129,7 @@ class Products with ChangeNotifier {
     notifyListeners();
 
     http.delete(url).then((resp) {
-      if(resp.statusCode >= 400){
+      if (resp.statusCode >= 400) {
         throw HttpException('Could Not Delete Product');
       }
       existingProduct = null;
@@ -124,6 +137,5 @@ class Products with ChangeNotifier {
       _items.insert(existingProductIndex, existingProduct);
       notifyListeners();
     });
-
   }
 }
