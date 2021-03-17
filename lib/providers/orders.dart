@@ -8,21 +8,25 @@ import 'dart:convert';
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
   Map<String,String> _token;
+  String _userId;
 
   List<OrderItem> get orders {
     return [..._orders];
   }
 
-  void update(String authToken){
+  void update(String authToken,String userID){
     if(authToken != null){
       _token = {"auth" :authToken};
+    }
+    if(userID != null){
+      _userId = userID;
     }
   }
 
   Future<void> fetchAndSetOrders() async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/orders.json",_token);
+        "/orders/$_userId.json",_token);
     final response = await http.get(url);
     final List<OrderItem> loadedOrders = [];
     final extractedData = json.decode(response.body) as Map<String, dynamic>;
@@ -50,7 +54,7 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final url = Uri.https(
         "flutter-shop-app-6e97a-default-rtdb.europe-west1.firebasedatabase.app",
-        "/orders.json",_token);
+        "/orders/$_userId.json",_token);
     try {
       final timeStamp = DateTime.now();
       final response = await http.post(url,
