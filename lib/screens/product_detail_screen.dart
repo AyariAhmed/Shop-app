@@ -7,48 +7,60 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productId = ModalRoute.of(context).settings.arguments as String;
+    final productId = ModalRoute
+        .of(context)
+        .settings
+        .arguments as String;
 
     final loadedProduct =
-        Provider.of<Products>(context, listen: false).findById(productId);
+    Provider.of<Products>(context, listen: false).findById(productId);
 
 
     return Scaffold(
-      appBar: AppBar(
+      /*  appBar: AppBar(
         title: Text(loadedProduct.title),
-      ),
-      body: Column(
-        children: [
-          Container(
-            height: 300,
-            width: double.infinity,
-            child: Hero(
-              tag: productId,
-              child: Image.network(
-                loadedProduct.imageUrl,
-                fit: BoxFit.cover,
+      ),*/
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(title: Container(
+                padding: EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                color: Colors.black45,
+                child: Text(
+                    loadedProduct.title)),
+              background: Hero(
+                tag: productId,
+                child: Image.network(
+                  loadedProduct.imageUrl,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-          SizedBox(
-            height: 10,
-          ),
-          Text(
-            '\$${loadedProduct.price}',
-            style: TextStyle(color: Colors.grey, fontSize: 20),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            width: double.infinity,
-            child: Text(
-              loadedProduct.description,
-              softWrap: true,
+          SliverList(delegate: SliverChildListDelegate([
+            SizedBox(
+              height: 10,
+            ),
+            Text(
+              '\$${loadedProduct.price}',
+              style: TextStyle(color: Colors.grey, fontSize: 20),
               textAlign: TextAlign.center,
             ),
-          )
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              width: double.infinity,
+              child: Text(
+                loadedProduct.description,
+                softWrap: true,
+                textAlign: TextAlign.center,
+              ),
+            )
+          ]))
         ],
       ),
     );
