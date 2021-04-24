@@ -1,4 +1,4 @@
-# shop_app 
-## Flutter + Firebase
-
-Shop Mobile Application experimenting State management with Provider package and Firebase as server-side.
+# Online Shop Application
+ * Clone the Repo
+ * run : flutter pub get
+ * launch the app using the command : flutter run
