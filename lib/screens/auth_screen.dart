@@ -112,6 +112,20 @@ class _AuthCardState extends State<AuthCard>
 
   AuthMode _authMode = AuthMode.Login;
 
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 350));
+    _heightAnimation = Tween<Size>(
+        begin: Size(double.infinity, 235), end: Size(double.infinity, 570))
+        .animate(
+        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+   /* _heightAnimation.addListener(() {
+      setState(() {});
+    });*/
+  }
+
   void _showErrorDialog(String msg) {
     showDialog(
         context: context,
@@ -139,15 +153,7 @@ class _AuthCardState extends State<AuthCard>
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-        vsync: this, duration: Duration(milliseconds: 350));
-    _heightAnimation = Tween<Size>(begin: Size(double.infinity,235),end: Size(double.infinity,570)).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
-    _heightAnimation.addListener(() {setState(() {});});
-  }
+
 
   Future<void> _submit() async {
     if (!_formKey.currentState.validate()) {
@@ -215,107 +221,118 @@ class _AuthCardState extends State<AuthCard>
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 8.0,
-      child: Container(
-        // height: _authMode == AuthMode.Signup ? 560 : 260,
-        height: _heightAnimation.value.height,
-        constraints:
-            BoxConstraints(minHeight:_heightAnimation.value.height),
-        width: deviceSize.width * 0.78,
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'E-Mail'),
-                  keyboardType: TextInputType.emailAddress,
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context).requestFocus(_passwordFocusNode);
-                  },
-                  validator: (value) {
-                    if (value.isEmpty ||
-                        !value.contains('@') ||
-                        !value.contains('.')) {
-                      return 'Invalid email!';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _authData['email'] = value;
-                  },
-                ),
-                TextFormField(
-                  decoration: InputDecoration(labelText: 'Password'),
-                  obscureText: true,
-                  focusNode: _passwordFocusNode,
-                  onFieldSubmitted: (_) {
-                    FocusScope.of(context)
-                        .requestFocus(_confirmPasswordFocusNode);
-                  },
-                  controller: _passwordController,
-                  validator: (value) {
-                    if (value.isEmpty || value.length < 5) {
-                      return 'Password is too short!';
-                    }
-                    return null;
-                  },
-                  onSaved: (value) {
-                    _authData['password'] = value;
-                  },
-                ),
-                if (_authMode == AuthMode.Signup)
+      child: AnimatedBuilder(
+          animation: _heightAnimation,
+        builder: (ctx, passedChild) => Container(
+          // height: _authMode == AuthMode.Signup ? 560 : 260,
+          height: _heightAnimation.value.height,
+          constraints:
+          BoxConstraints(minHeight: _heightAnimation.value.height),
+          width: deviceSize.width * 0.78,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+          child: passedChild,
+        ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
                   TextFormField(
-                    enabled: _authMode == AuthMode.Signup,
-                    decoration: InputDecoration(labelText: 'Confirm Password'),
-                    focusNode: _confirmPasswordFocusNode,
+                    decoration: InputDecoration(labelText: 'E-Mail'),
+                    keyboardType: TextInputType.emailAddress,
                     onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(_submitFocusNode);
+                      FocusScope.of(context)
+                          .requestFocus(_passwordFocusNode);
                     },
+                    validator: (value) {
+                      if (value.isEmpty ||
+                          !value.contains('@') ||
+                          !value.contains('.')) {
+                        return 'Invalid email!';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _authData['email'] = value;
+                    },
+                  ),
+                  TextFormField(
+                    decoration: InputDecoration(labelText: 'Password'),
                     obscureText: true,
-                    validator: _authMode == AuthMode.Signup
-                        ? (value) {
-                            if (value != _passwordController.text) {
-                              return 'Passwords do not match!';
-                            }
-                            return null;
-                          }
-                        : null,
+                    focusNode: _passwordFocusNode,
+                    onFieldSubmitted: (_) {
+                      FocusScope.of(context)
+                          .requestFocus(_confirmPasswordFocusNode);
+                    },
+                    controller: _passwordController,
+                    validator: (value) {
+                      if (value.isEmpty || value.length < 5) {
+                        return 'Password is too short!';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      _authData['password'] = value;
+                    },
                   ),
-                SizedBox(
-                  height: 20,
-                ),
-                if (_isLoading)
-                  CircularProgressIndicator()
-                else
-                  // ignore: deprecated_member_use
-                  RaisedButton(
-                    child:
-                        Text(_authMode == AuthMode.Login ? 'LOGIN' : 'SIGN UP'),
-                    onPressed: _submit,
-                    focusNode: _submitFocusNode,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                  if (_authMode == AuthMode.Signup)
+                    TextFormField(
+                      enabled: _authMode == AuthMode.Signup,
+                      decoration:
+                      InputDecoration(labelText: 'Confirm Password'),
+                      focusNode: _confirmPasswordFocusNode,
+                      onFieldSubmitted: (_) {
+                        FocusScope.of(context)
+                            .requestFocus(_submitFocusNode);
+                      },
+                      obscureText: true,
+                      validator: _authMode == AuthMode.Signup
+                          ? (value) {
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match!';
+                        }
+                        return null;
+                      }
+                          : null,
                     ),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
-                    color: Theme.of(context).primaryColor,
-                    textColor: Theme.of(context).primaryTextTheme.button.color,
+                  SizedBox(
+                    height: 20,
                   ),
-                // ignore: deprecated_member_use
-                FlatButton(
-                  child: Text(
-                      '${_authMode == AuthMode.Login ? 'SIGNUP' : 'LOGIN'} INSTEAD'),
-                  onPressed: _switchAuthMode,
-                  padding: EdgeInsets.symmetric(horizontal: 30.0, vertical: 4),
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  textColor: Theme.of(context).primaryColor,
-                ),
-              ],
+                  if (_isLoading)
+                    CircularProgressIndicator()
+                  else
+                  // ignore: deprecated_member_use
+                    RaisedButton(
+                      child: Text(_authMode == AuthMode.Login
+                          ? 'LOGIN'
+                          : 'SIGN UP'),
+                      onPressed: _submit,
+                      focusNode: _submitFocusNode,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 30.0, vertical: 8.0),
+                      color: Theme.of(context).primaryColor,
+                      textColor:
+                      Theme.of(context).primaryTextTheme.button.color,
+                    ),
+                  // ignore: deprecated_member_use
+                  FlatButton(
+                    child: Text(
+                        '${_authMode == AuthMode.Login ? 'SIGNUP' : 'LOGIN'} INSTEAD'),
+                    onPressed: _switchAuthMode,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 30.0, vertical: 4),
+                    materialTapTargetSize:
+                    MaterialTapTargetSize.shrinkWrap,
+                    textColor: Theme.of(context).primaryColor,
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+         ),
     );
   }
 }
