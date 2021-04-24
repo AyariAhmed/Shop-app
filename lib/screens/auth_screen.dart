@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/models/http_exception.dart';
 import 'package:shop_app/providers/auth.dart';
-import 'package:shop_app/screens/products_overview_screen.dart';
 
-enum AuthMode { Signup, Login }
+
+enum AuthMode { Signup , Login }
 
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -92,12 +92,23 @@ class AuthCard extends StatefulWidget {
   _AuthCardState createState() => _AuthCardState();
 }
 
-class _AuthCardState extends State<AuthCard> {
+class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin{
 
   final GlobalKey<FormState> _formKey = GlobalKey();
   final _passwordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
   final _submitFocusNode = FocusNode();
+
+  Map<String, String> _authData = {
+    'email': '',
+    'password': '',
+  };
+  var _isLoading = false;
+  final _passwordController = TextEditingController();
+
+  var containerHeight = 260;
+  AnimationController _controller;
+  Animation<Size> _heightAnimation;
 
   AuthMode _authMode = AuthMode.Login;
 
@@ -114,12 +125,12 @@ class _AuthCardState extends State<AuthCard> {
     });
   }
 
-  Map<String, String> _authData = {
-    'email': '',
-    'password': '',
-  };
-  var _isLoading = false;
-  final _passwordController = TextEditingController();
+  @override
+  void initState(){
+    super.initState();
+    _controller = AnimationController(vsync: this);
+}
+
 
   Future<void> _submit() async{
     if (!_formKey.currentState.validate()) {
