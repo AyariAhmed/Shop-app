@@ -6,12 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:shop_app/providers/product.dart';
 
 class ProductItem extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-
     final cart = Provider.of<Cart>(context);
-    final authData = Provider.of<Auth>(context,listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
 
     return Consumer<Product>(
       builder: (ctx, Product product, child) => ClipRRect(
@@ -24,9 +22,15 @@ class ProductItem extends StatelessWidget {
                 arguments: product.id,
               );
             },
-            child: Image.network(
-              product.imageUrl,
-              fit: BoxFit.cover,
+            child: Hero(
+              tag: product.id,
+              child: FadeInImage(
+                  placeholder:
+                      AssetImage('assets/images/product-placeholder.png'),
+                  image: NetworkImage(
+                    product.imageUrl,
+                  ),
+                  fit: BoxFit.cover),
             ),
           ),
           footer: GridTileBar(
@@ -34,7 +38,7 @@ class ProductItem extends StatelessWidget {
               icon: Icon(
                   product.isFavorite ? Icons.favorite : Icons.favorite_border),
               onPressed: () {
-                product.toggleFavoriteStatus(authData.token,authData.userId);
+                product.toggleFavoriteStatus(authData.token, authData.userId);
               },
               color: Theme.of(context).accentColor,
             ),
@@ -51,9 +55,12 @@ class ProductItem extends StatelessWidget {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text('Added Item to Cart!'),
                   duration: Duration(seconds: 8),
-                  action: SnackBarAction(label: 'Undo',onPressed: (){
-                    cart.removeSingleItem(product.id);
-                  },),
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      cart.removeSingleItem(product.id);
+                    },
+                  ),
                 ));
               },
               color: Theme.of(context).accentColor,
