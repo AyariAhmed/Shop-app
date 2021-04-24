@@ -4,8 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:shop_app/models/http_exception.dart';
 import 'package:shop_app/providers/auth.dart';
 
-
-enum AuthMode { Signup , Login }
+enum AuthMode { Signup, Login }
 
 class AuthScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -92,8 +91,8 @@ class AuthCard extends StatefulWidget {
   _AuthCardState createState() => _AuthCardState();
 }
 
-class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin{
-
+class _AuthCardState extends State<AuthCard>
+    with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
   final _passwordFocusNode = FocusNode();
   final _confirmPasswordFocusNode = FocusNode();
@@ -107,32 +106,50 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
   final _passwordController = TextEditingController();
 
   var containerHeight = 260;
+
   AnimationController _controller;
   Animation<Size> _heightAnimation;
 
   AuthMode _authMode = AuthMode.Login;
 
-  void _showErrorDialog(String msg){
-    showDialog(context: context, builder: (ctx){
-      return AlertDialog(title: Text('An Error Occurred!'),
-        content: Text(msg),
-        actions: [
-          TextButton(onPressed: (){
-            Navigator.of(ctx).pop();
-          }, child: Text('Okay'))
-        ],
-      );
-    });
+  void _showErrorDialog(String msg) {
+    showDialog(
+        context: context,
+        builder: (ctx) {
+          return AlertDialog(
+            title: Text('An Error Occurred!'),
+            content: Text(msg),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                  child: Text('Okay'))
+            ],
+          );
+        });
   }
 
   @override
-  void initState(){
+  void dispose() {
+    _controller.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
+    _submitFocusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this);
-}
+    _controller = AnimationController(
+        vsync: this, duration: Duration(milliseconds: 350));
+    _heightAnimation = Tween<Size>(begin: Size(double.infinity,235),end: Size(double.infinity,570)).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+    _heightAnimation.addListener(() {setState(() {});});
+  }
 
-
-  Future<void> _submit() async{
+  Future<void> _submit() async {
     if (!_formKey.currentState.validate()) {
       // Invalid!
       return;
@@ -141,16 +158,17 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
     setState(() {
       _isLoading = true;
     });
-    try{
-    if (_authMode == AuthMode.Login) {
-      // Log user in
-      await Provider.of<Auth>(context,listen: false).signin(_authData['email'], _authData['password']);
-    } else {
-      // Sign user up
-     await Provider.of<Auth>(context,listen: false).signup(_authData['email'], _authData['password']);
-    }
-
-    }on HttpException catch(error){
+    try {
+      if (_authMode == AuthMode.Login) {
+        // Log user in
+        await Provider.of<Auth>(context, listen: false)
+            .signin(_authData['email'], _authData['password']);
+      } else {
+        // Sign user up
+        await Provider.of<Auth>(context, listen: false)
+            .signup(_authData['email'], _authData['password']);
+      }
+    } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
       if (error.toString().contains('EMAIL_EXISTS')) {
         errorMessage = 'This email address is already in use.';
@@ -164,7 +182,7 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
         errorMessage = 'Wrong Credentials!';
       }
       _showErrorDialog(errorMessage);
-    }catch(error){
+    } catch (error) {
       print(error);
       const errorMessage = 'Could not Authenticate! Please try again later.';
       _showErrorDialog(errorMessage);
@@ -179,10 +197,12 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
       setState(() {
         _authMode = AuthMode.Signup;
       });
+      _controller.forward();
     } else {
       setState(() {
         _authMode = AuthMode.Login;
       });
+      _controller.reverse();
     }
   }
 
@@ -196,11 +216,12 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
       ),
       elevation: 8.0,
       child: Container(
-        height: _authMode == AuthMode.Signup ? 560 : 260,
+        // height: _authMode == AuthMode.Signup ? 560 : 260,
+        height: _heightAnimation.value.height,
         constraints:
-            BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 560 : 260),
+            BoxConstraints(minHeight:_heightAnimation.value.height),
         width: deviceSize.width * 0.78,
-        padding: EdgeInsets.symmetric(horizontal: 16,vertical: 5),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
@@ -209,7 +230,7 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
                 TextFormField(
                   decoration: InputDecoration(labelText: 'E-Mail'),
                   keyboardType: TextInputType.emailAddress,
-                  onFieldSubmitted: (_){
+                  onFieldSubmitted: (_) {
                     FocusScope.of(context).requestFocus(_passwordFocusNode);
                   },
                   validator: (value) {
@@ -228,8 +249,9 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
                   decoration: InputDecoration(labelText: 'Password'),
                   obscureText: true,
                   focusNode: _passwordFocusNode,
-                  onFieldSubmitted: (_){
-                    FocusScope.of(context).requestFocus(_confirmPasswordFocusNode);
+                  onFieldSubmitted: (_) {
+                    FocusScope.of(context)
+                        .requestFocus(_confirmPasswordFocusNode);
                   },
                   controller: _passwordController,
                   validator: (value) {
@@ -247,7 +269,7 @@ class _AuthCardState extends State<AuthCard> with SingleTickerProviderStateMixin
                     enabled: _authMode == AuthMode.Signup,
                     decoration: InputDecoration(labelText: 'Confirm Password'),
                     focusNode: _confirmPasswordFocusNode,
-                    onFieldSubmitted: (_){
+                    onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(_submitFocusNode);
                     },
                     obscureText: true,
