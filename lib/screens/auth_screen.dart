@@ -221,17 +221,15 @@ class _AuthCardState extends State<AuthCard>
         borderRadius: BorderRadius.circular(10.0),
       ),
       elevation: 8.0,
-      child: AnimatedBuilder(
-          animation: _heightAnimation,
-        builder: (ctx, passedChild) => Container(
-          // height: _authMode == AuthMode.Signup ? 560 : 260,
-          height: _heightAnimation.value.height,
+      child: AnimatedContainer(
+          duration: Duration(milliseconds: 350),
+          curve: Curves.fastOutSlowIn,
+          height: _authMode == AuthMode.Signup ? 570 : 245,
+          // height: _heightAnimation.value.height,
           constraints:
-          BoxConstraints(minHeight: _heightAnimation.value.height),
+          BoxConstraints(minHeight: _authMode == AuthMode.Signup ? 570 : 245,),
           width: deviceSize.width * 0.78,
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-          child: passedChild,
-        ),
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -332,7 +330,8 @@ class _AuthCardState extends State<AuthCard>
               ),
             ),
           ),
-         ),
+        ),
+
     );
   }
 }
